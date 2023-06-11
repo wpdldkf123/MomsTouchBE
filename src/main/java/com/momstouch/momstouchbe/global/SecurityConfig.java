@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -69,11 +68,12 @@ public class SecurityConfig {
                 .anyRequest()
                 .permitAll()
                 .and()
+                     .logout().logoutSuccessUrl("/login")
+                     .and()
                      .oauth2Login()
                      .userInfoEndpoint() // OAuth2 로그인 성공 후 가져올 설정들
                      .userService(customOAuth2UserService); // 서버에서 사용자 정보를 가져온 상태에서 추가로 진행하고자 하는 기능 명시
                      return http.build();
-
     }
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

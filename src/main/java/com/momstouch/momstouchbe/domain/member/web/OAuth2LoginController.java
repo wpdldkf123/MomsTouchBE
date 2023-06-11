@@ -4,11 +4,14 @@ import com.momstouch.momstouchbe.domain.member.model.Member;
 import com.momstouch.momstouchbe.domain.member.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 
 @RestController
@@ -51,8 +54,20 @@ public class OAuth2LoginController {
                 authenticationToken.getName());
     }
 
-    @GetMapping("/api/user/{id}")
-    public ResponseEntity<Member> getUser(@PathVariable Long id) {   //화면으로 정보 뿌려주는 API 현재는 name과 이메일을 뿌려줌
+    @GetMapping("/logout")
+    public String logoutv2(HttpServletRequest request) {
+        //세션을 삭제
+        HttpSession session = request.getSession(true);
+        // session이 null이 아니라는건 기존에 세션이 존재했었다는 뜻이므로
+        // 세션이 null이 아니라면 session.invalidate()로 세션 삭제해주기.
+        if(session != null) {
+            session.invalidate();
+        }
+        return "redirect:/";
+    }
+
+    @GetMapping("/api/user/{id}")  //회원가입 확인용
+    public ResponseEntity<Member> getUser(@PathVariable Long id) {
         Member user = memberRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
@@ -60,6 +75,14 @@ public class OAuth2LoginController {
         user.getAccount().setName(user.getName());
 
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/api/user/me")
+    public ResponseEntity<Member> getCurrentUser(HttpSession httpSession) {
+        Member currentUser = (Member) httpSession.getAttribute("user");
+
+
+        return ResponseEntity.ok(currentUser);
     }
 
 

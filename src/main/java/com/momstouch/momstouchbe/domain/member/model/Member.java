@@ -4,7 +4,7 @@ import lombok.*;
 import org.springframework.security.core.Authentication;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+
 
 @Entity
 @Builder
@@ -16,7 +16,7 @@ public class Member {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotNull
+
     private String email; //가입 이메일
 
     @Embedded
@@ -42,6 +42,7 @@ public class Member {
         return Member.builder()
                 .account(Account.builder()
                         .name(name)
+                        .role("ROLE_MEMBER")
                         .build())
                 .build();
     }
