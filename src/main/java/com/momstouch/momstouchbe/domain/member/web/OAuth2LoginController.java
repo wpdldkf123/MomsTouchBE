@@ -4,14 +4,15 @@ import com.momstouch.momstouchbe.domain.member.model.Member;
 import com.momstouch.momstouchbe.domain.member.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -22,17 +23,18 @@ public class OAuth2LoginController {
     @Autowired
     private MemberRepository memberRepository;
 
+
     @GetMapping("/login")
     public String loginPage() {
         return "login"; // 로그인 페이지로 이동
     }
 
-    @GetMapping("/admins")
+    @GetMapping("/admins/1234")
     public String adminPage() {
         return "admins";
     }
 
-    @GetMapping("/login/oauth2/code/google")
+    @GetMapping("/api/login/oauth2/code/google")
     public String oauth2Callback(@PathVariable String registrationId,
                                  OAuth2AuthenticationToken authenticationToken,
                                  HttpServletRequest request) {
@@ -45,7 +47,10 @@ public class OAuth2LoginController {
         // 로그인 처리 및 리다이렉트
         // ...
 
-        return "redirect:/admins"; // 로그인 성공 시 홈 페이지로 리다이렉트
+        RedirectView redirectView = new RedirectView();
+        redirectView.setUrl("http://localhost:3000");
+
+        return String.valueOf(redirectView); // 로그인 성공 시 홈 페이지로 리다이렉트
     }
 
     private OAuth2AuthorizedClient getAuthorizedClient(String registrationId, OAuth2AuthenticationToken authenticationToken) {
@@ -54,17 +59,18 @@ public class OAuth2LoginController {
                 authenticationToken.getName());
     }
 
-    @GetMapping("/logout")
-    public String logoutv2(HttpServletRequest request) {
-        //세션을 삭제
-        HttpSession session = request.getSession(true);
-        // session이 null이 아니라는건 기존에 세션이 존재했었다는 뜻이므로
-        // 세션이 null이 아니라면 session.invalidate()로 세션 삭제해주기.
-        if(session != null) {
-            session.invalidate();
-        }
-        return "redirect:/";
-    }
+//    @GetMapping("/api/logout")
+//    public String logoutv2(HttpServletRequest request) {
+//        // 세션을 삭제
+//        HttpSession session = request.getSession(true);
+//
+//        if (session != null) {
+//            session.invalidate();
+//        }
+//
+//        // 리다이렉션 URL 반환
+//        return "redirect:http://localhost:3000";
+//    }
 
     @GetMapping("/api/user/{id}")  //회원가입 확인용
     public ResponseEntity<Member> getUser(@PathVariable Long id) {
@@ -78,12 +84,17 @@ public class OAuth2LoginController {
     }
 
     @GetMapping("/api/user/me")
-    public ResponseEntity<Member> getCurrentUser(HttpSession httpSession) {
+    public ResponseEntity<Map<String, Object>> getCurrentUser(HttpSession httpSession) {
         Member currentUser = (Member) httpSession.getAttribute("user");
 
+        Map<String, Object> response = new HashMap<>();
+        response.put("email", currentUser.getEmail());
+        response.put("name", currentUser.getAccount().getName());
+        response.put("role", currentUser.getRole());
 
-        return ResponseEntity.ok(currentUser);
+        return ResponseEntity.ok(response);
     }
+
 
 
     public class NotFoundException extends RuntimeException {

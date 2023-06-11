@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpSession;
 import java.util.Collections;
+import java.util.Optional;
 
 
 @Service
@@ -55,14 +56,28 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 attributes.getNameAttributeKey());
     }
 
-    @Transactional
-    public Member saveOrUpdate(OAuthAttributes attributes) {
-        Member member = memberRepository.findByEmail(attributes.getEmail())
-                .map(entity -> entity.update(attributes.getName()))
-                .orElse(attributes.toEntity());
+//    @Transactional
+//    public Member saveOrUpdate(OAuthAttributes attributes) {
+//        Member member = memberRepository.findByEmail(attributes.getEmail())
+//                .map(entity -> entity.update(attributes.getName()))
+//                .orElse(attributes.toEntity());
+//
+//        return memberRepository.save(member);
+//    }
+@Transactional
+public Member saveOrUpdate(OAuthAttributes attributes) {
+    Optional<Member> optionalMember = memberRepository.findByEmail(attributes.getEmail());
 
+    if (optionalMember.isPresent()) {
+        Member member = optionalMember.get();
+        member.update(attributes.getName());
         return memberRepository.save(member);
+    } else {
+        Member newMember = attributes.toEntity();
+        return memberRepository.save(newMember);
     }
+}
+
 
 
 }

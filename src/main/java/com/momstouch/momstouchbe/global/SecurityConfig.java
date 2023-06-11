@@ -45,6 +45,7 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:3000");
         config.setAllowCredentials(true); //내 서버가 응답을 할 때 json을 자바스크립트에서 처리할 수 있게 할지 설정하는 것,
         config.addAllowedOriginPattern("*"); // e.g. http://domain1.com // *이면 모든 ip에 응답을 허용하겠다.
         config.addAllowedHeader("*"); //모든 header에 응답을 허용하겠다.
@@ -63,14 +64,18 @@ public class SecurityConfig {
                 .httpBasic().disable()
                 .formLogin().disable()
                      .authorizeRequests()
-                     .antMatchers("/admins/**")
+                     .antMatchers("http://localhost:3000/owner/**")
                      .access("hasRole('ROLE_ADMIN')")
                 .anyRequest()
                 .permitAll()
                 .and()
-                     .logout().logoutSuccessUrl("/login")
+                     .logout()
+                     .logoutUrl("/logout")
+                     .deleteCookies("user")
+                     .logoutSuccessUrl("http://localhost:3000")
+                     .invalidateHttpSession(true)
                      .and()
-                     .oauth2Login()
+                     .oauth2Login().defaultSuccessUrl("http://localhost:3000")
                      .userInfoEndpoint() // OAuth2 로그인 성공 후 가져올 설정들
                      .userService(customOAuth2UserService); // 서버에서 사용자 정보를 가져온 상태에서 추가로 진행하고자 하는 기능 명시
                      return http.build();

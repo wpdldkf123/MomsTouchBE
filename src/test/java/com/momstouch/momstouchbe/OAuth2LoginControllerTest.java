@@ -56,6 +56,11 @@ public class OAuth2LoginControllerTest {
                 .andExpect(jsonPath("$.name").value(member.getAccount().getName()))
                 .andExpect(jsonPath("$.role").value(member.getRole()));
     }
+    @Test
+    void 로그인페이지_접속() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.get("/login"))
+                .andExpect(status().isOk());
+    }
 
     @Test
     @WithMockUser(roles = "MEMBER")
@@ -65,9 +70,15 @@ public class OAuth2LoginControllerTest {
     }
 
     @Test
+    void 로그인_화면_테스트() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/login/oauth2/code/google"))
+                .andExpect(status().isFound());
+    }
+
+    @Test
     @WithMockUser(roles = "ADMIN")
     void 어드민_접속_테스트() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/admins"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/admins/1234"))
                 .andExpect(status().isOk());
     }
 
